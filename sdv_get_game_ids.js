@@ -24,7 +24,7 @@ function getBoxScores(games) {
       const gameBox = sdv.ncaa.getBoxScore(gid);
       //			gameBox.then(box => console.log(box.teams[0].teamId))
       if (gid === "3942769") {
-        gameBox.then((box) => console.log(box.teams[0].playerHeader));
+        gameBox.then((box) => transformBoxScore(box));
       }
       boxScores[gid] = gameBox;
     } catch (error) {
@@ -38,10 +38,18 @@ function getBoxScores(games) {
 
 function transformBoxScore(boxScore) {
   var transformed = new Object();
-  transformed["t0_id"] = boxScore.teams[0].teamId;
-  transformed["t1_id"] = boxScore.teams[1].teamId;
+  var games = new Object();
+  var boxPlayer = new Object();
+  var boxTeam = new Object();
+  const t0_id = boxScore.teams[0].teamId;
+  const t1_id = boxScore.teams[1].teamId;
   // check this
-  transformed["t0_home"] = boxScore.meta.teams[0].homeTeam === "true";
+  games["is_t0_home"] = boxScore.meta.teams[0].homeTeam === "true";
+  games["t0_id"] = t0_id;
+  games["t1_id"] = t1_id;
+  games["game_date"] = boxScore.updatedTimestamp;
+  // adding created_at timestamps? Where in pipeline does that happen?
+  // boxPlayer creation
   var playerHeaders = [
     "team_id",
     "first_name",
@@ -68,6 +76,7 @@ function transformBoxScore(boxScore) {
     "ft_pct",
     "efg_pct",
   ];
+  // boxTeam creation
   var teamHeaders = [
     "team_id",
     "fgm",
@@ -93,7 +102,18 @@ function transformBoxScore(boxScore) {
 
   var t0_team_stats = boxScore.teams[0].playerTotals;
   // sketch out how this is saved. team data: game_id, team_id, all the stats?
+  var box_t0_stats = Object();
+  box_t0_stats["fgm"] = parseInt(t0_team_stats.fieldGoalsMade.split("-")[0]);
+  box_t0_stats["fga"] = parseInt(t0_team_stats.fieldGoalsMade.split("-")[1]);
+  box_t0_stats["3pm"] = parseInt(t0_team_stats.threePointsMade.split("-")[0]);
+  box_t0_stats["3pa"] = parseInt(t0_team_stats.threePointsMade.split("-")[1]);
+  box_t0_stats["ftm"] = parseInt(t0_team_stats.freeThrowsMade.split("-")[0]);
+  box_t0_stats["fta"] = parseInt(t0_team_stats.freeThrowsMade.split("-")[1]);
+  console.log(box_t0_stats);
+  console.log(games);
 }
+
+function splitParse() {}
 
 const scores = sdv.ncaa.getScoreboard(
   (sport = "basketball-men"),
