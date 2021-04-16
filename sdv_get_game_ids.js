@@ -50,6 +50,7 @@ function transformBoxScore(boxScore) {
   games["game_date"] = boxScore.updatedTimestamp;
   // adding created_at timestamps? Where in pipeline does that happen?
   // boxPlayer creation
+  // not sure this is necessary since can't create object from keys with empty values in JS
   var playerHeaders = [
     "team_id",
     "first_name",
@@ -113,6 +114,7 @@ function transformBoxScore(boxScore) {
   console.log(games);
 }
 
+// fill in function for handling the splitting and parsing like above
 function splitParse() {}
 
 const scores = sdv.ncaa.getScoreboard(
