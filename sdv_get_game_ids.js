@@ -1,4 +1,5 @@
 var sdv = require("sportsdataverse");
+const { Pool, Client } = require('pg');
 
 function getGameID(games) {
   var gid = Array();
