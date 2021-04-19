@@ -1,5 +1,5 @@
 var sdv = require("sportsdataverse");
-const { Pool, Client } = require('pg');
+const { Pool, Client } = require("pg");
 
 function getGameID(games) {
   var gid = Array();
@@ -102,21 +102,52 @@ function transformBoxScore(boxScore) {
     "efg_pct",
   ];
 
-  var t0_team_stats = boxScore.teams[0].playerTotals;
-  // sketch out how this is saved. team data: game_id, team_id, all the stats?
-  var box_t0_stats = Object();
-  box_t0_stats["fgm"] = parseInt(t0_team_stats.fieldGoalsMade.split("-")[0]);
-  box_t0_stats["fga"] = parseInt(t0_team_stats.fieldGoalsMade.split("-")[1]);
-  box_t0_stats["3pm"] = parseInt(t0_team_stats.threePointsMade.split("-")[0]);
-  box_t0_stats["3pa"] = parseInt(t0_team_stats.threePointsMade.split("-")[1]);
-  box_t0_stats["ftm"] = parseInt(t0_team_stats.freeThrowsMade.split("-")[0]);
-  box_t0_stats["fta"] = parseInt(t0_team_stats.freeThrowsMade.split("-")[1]);
-  console.log(box_t0_stats);
+  var t0_team_stats = parseTeamBox(boxScore.teams[0].playerTotals);
+  var t1_team_stats = parseTeamBox(boxScore.teams[1].playerTotals);
+  console.log(t0_team_stats);
+  boxTeam[t0_id] = t0_team_stats;
+  boxTeam[t1_id] = t1_team_stats;
   console.log(games);
 }
 
+function parseTeamBox(teamStats) {
+  var teamBoxStats = Object();
+  teamBoxStats["fgm"] = parseInt(teamStats.fieldGoalsMade.split("-")[0]);
+  teamBoxStats["fga"] = parseInt(teamStats.fieldGoalsMade.split("-")[1]);
+  teamBoxStats["fg3m"] = parseInt(teamStats.threePointsMade.split("-")[0]);
+  teamBoxStats["fg3a"] = parseInt(teamStats.threePointsMade.split("-")[1]);
+  teamBoxStats["fg2m"] = teamBoxStats.fgm - teamBoxStats.fg3m;
+  teamBoxStats["fg2a"] = teamBoxStats.fga - teamBoxStats.fg3a;
+  teamBoxStats["ftm"] = parseInt(teamStats.freeThrowsMade.split("-")[0]);
+  teamBoxStats["fta"] = parseInt(teamStats.freeThrowsMade.split("-")[1]);
+  teamBoxStats["total_rebs"] = parseInt(teamStats.totalRebounds, 10);
+  teamBoxStats["o_rebs"] = parseInt(teamStats.offensiveRebounds, 10);
+  teamBoxStats["d_rebs"] = teamBoxStats.total_rebs - teamBoxStats.o_rebs;
+  teamBoxStats["assists"] = parseInt(teamStats.assists, 10);
+  teamBoxStats["fouls"] = parseInt(teamStats.personalFouls, 10);
+  teamBoxStats["steals"] = parseInt(teamStats.steals, 10);
+  teamBoxStats["tovs"] = parseInt(teamStats.turnovers, 10);
+  teamBoxStats["blocks"] = parseInt(teamStats.blockedShots, 10);
+  teamBoxStats["points"] = parseInt(teamStats.points, 10);
+  teamBoxStats["fg_pct"] = teamBoxStats.fgm / teamBoxStats.fga;
+  teamBoxStats["fg3p_pct"] = teamBoxStats.fg3m / teamBoxStats.fg3a;
+  teamBoxStats["ft_pct"] = teamBoxStats.ftm / teamBoxStats.fta;
+  teamBoxStats["efg_pct"] =
+    (teamBoxStats.fgm + 0.5 * teamBoxStats.fg3m) / teamBoxStats.fga;
+  teamBoxStats["fg2p_pct"] = teamBoxStats.fg2m / teamBoxStats.fg2a;
+  return teamBoxStats;
+}
+
 // fill in function for handling the splitting and parsing like above
-function splitParse() {}
+function splitParse(stat, isInt = true) {
+  if (isInt) {
+    return stat.split("-").map(function (x) {
+      return parseInt(x, 10);
+    });
+  } else {
+    return stat.split("-");
+  }
+}
 
 const scores = sdv.ncaa.getScoreboard(
   (sport = "basketball-men"),

@@ -6,7 +6,9 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
 ## Next Steps
 - Pulling relevant data from box scores
   - Extract and format the data and functionalize it
+    - Done for game and boxTeam
 - Designing and setting up the database
   - Figuring out how to insert multiple rows at once
   - Current design: games, boxTeams, boxPlayers
+    - When is the best time to write to the db? When works best for the code?
 - Get one day of box data into the database
