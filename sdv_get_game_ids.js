@@ -140,6 +140,8 @@ function parseTeamBox(teamStats) {
 
 function parsePlayerStats(playerStats) {
   // how to do this since it'll be multiple players??
+  // combine this and team to reduce redundancy?
+  // fg3p_pct ==> fg3_pct ??
   var playerBoxStats = Object();
   playerBoxStats["first_name"] = playerStats.firstName
   playerBoxStats["last_name"] = playerStats.lastName
@@ -148,15 +150,35 @@ function parsePlayerStats(playerStats) {
   const fgData = splitParse(playerStats.fieldGoalsMade)
   playerBoxStats["fgm"] = fgData[0]
   playerBoxStats["fga"] = fgData[1] 
+  const fg3Data = splitParse(playerStats.threePointsMade)
+  playerBoxStats["fg3m"] = fg3Data[0]
+  playerBoxStats["fg3a"] = fg3Data[1]
+  const ftData = splitParse(playerStats.freeThrowsMade)
+  playerBoxStats["ftm"] = ftData[0]
+  playerBoxStats["fta"] = ftData[1]
+  playerBoxStats["total_rebs"] = parseInt(playerStats.totalRebounds, 10)
+  playerBoxStats["o_rebs"] = parseInt(playerStats.offensiveRebounds, 10)
+  playerBoxStats["d_rebs"] = playerBoxStats.total_rebs - playerBoxStats.o_rebs
+  playerBoxStats["assists"] = parseInt(playerBoxStats.assists, 10)
+  playerBoxStats["fouls"] = parseInt(playerBoxStats.personalFouls, 10)
+  playerBoxStats["steals"] = parseInt(playerBoxStats.steals, 10)
+  playerBoxStats["tovs"] = parseInt(playerBoxStats.turnovers, 10)
+  playerBoxStats["blocks"] = parseInt(playerBoxStats.blockedShots, 10)
+  playerBoxStats["fg_pct"] = playerBoxStats.fgm / playerBoxStats.fga
+  playerBoxStats["fg3p_pct"] = playerBoxStats.fg3m / playerBoxStats.fg3a
+  playerBoxStats["ft_pct"] = playerBoxStats.ftm / playerBoxStats.fta
+  playerBoxStats["efg_pct"] = (playerBoxStats.fgm + 0.5*playerBoxStats.fg3m) / playerBoxStats.fga
+  playerBoxStats["fg2p_pct"] = playerBoxStats.fg2m / playerBoxStats.fg2a
+  return playerBoxStats;
 
 // fill in function for handling the splitting and parsing like above
-function splitParse(stat, isInt = true) {
-  if (isInt) {
+function splitParse(stat, split = true) {
+  if (split) {
     return stat.split("-").map(function (x) {
       return parseInt(x, 10);
     });
   } else {
-    return stat.split("-");
+    return parseInt(stat, 10);
   }
 }
 
