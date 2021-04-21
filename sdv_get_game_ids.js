@@ -23,8 +23,8 @@ function getBoxScores(games) {
     try {
       // get box scores
       const gameBox = sdv.ncaa.getBoxScore(gid);
-      //			gameBox.then(box => console.log(box.teams[0].teamId))
       if (gid === "3942769") {
+	// [games, boxTeam, boxPlayer]
         gameBox.then((box) => transformBoxScore(box));
       }
       boxScores[gid] = gameBox;
@@ -137,6 +137,17 @@ function parseTeamBox(teamStats) {
   teamBoxStats["fg2p_pct"] = teamBoxStats.fg2m / teamBoxStats.fg2a;
   return teamBoxStats;
 }
+
+function parsePlayerStats(playerStats) {
+  // how to do this since it'll be multiple players??
+  var playerBoxStats = Object();
+  playerBoxStats["first_name"] = playerStats.firstName
+  playerBoxStats["last_name"] = playerStats.lastName
+  playerBoxStats["position"] = playerStats.position // null positions?
+  playerBoxStats["minutesPlayed"] = parseInt(playerStats.minutesPlayed, 10)
+  const fgData = splitParse(playerStats.fieldGoalsMade)
+  playerBoxStats["fgm"] = fgData[0]
+  playerBoxStats["fga"] = fgData[1] 
 
 // fill in function for handling the splitting and parsing like above
 function splitParse(stat, isInt = true) {
