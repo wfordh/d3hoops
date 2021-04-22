@@ -24,8 +24,9 @@ function getBoxScores(games) {
       // get box scores
       const gameBox = sdv.ncaa.getBoxScore(gid);
       if (gid === "3942769") {
-	// [games, boxTeam, boxPlayer]
-        gameBox.then((box) => transformBoxScore(box));
+        // [games, boxTeam, boxPlayer]
+        // gameBox.then((box) => transformBoxScore(box));
+        console.log(transformBoxScore(gameBox));
       }
       boxScores[gid] = gameBox;
     } catch (error) {
@@ -40,7 +41,7 @@ function getBoxScores(games) {
 function transformBoxScore(boxScore) {
   var transformed = new Object();
   var games = new Object();
-  var boxPlayer = new Object();
+  var boxAllPlayers = new Object();
   var boxTeam = new Object();
   const t0_id = boxScore.teams[0].teamId;
   const t1_id = boxScore.teams[1].teamId;
@@ -50,64 +51,26 @@ function transformBoxScore(boxScore) {
   games["t1_id"] = t1_id;
   games["game_date"] = boxScore.updatedTimestamp;
   // adding created_at timestamps? Where in pipeline does that happen?
-  // boxPlayer creation
-  // not sure this is necessary since can't create object from keys with empty values in JS
-  var playerHeaders = [
-    "team_id",
-    "first_name",
-    "last_name",
-    "position",
-    "minutes_played",
-    "fgm",
-    "fga",
-    "3pm",
-    "3pa",
-    "ftm",
-    "fta",
-    "total_rebs",
-    "o_rebs",
-    "d_rebs",
-    "assists",
-    "fouls",
-    "steals",
-    "tovs",
-    "blocks",
-    "points",
-    "fg_pct",
-    "3p_pct",
-    "ft_pct",
-    "efg_pct",
-  ];
-  // boxTeam creation
-  var teamHeaders = [
-    "team_id",
-    "fgm",
-    "fga",
-    "3pm",
-    "3pa",
-    "ftm",
-    "fta",
-    "total_rebs",
-    "o_rebs",
-    "d_rebs",
-    "assists",
-    "fouls",
-    "steals",
-    "tovs",
-    "blocks",
-    "points",
-    "fg_pct",
-    "3p_pct",
-    "ft_pct",
-    "efg_pct",
-  ];
 
   var t0_team_stats = parseTeamBox(boxScore.teams[0].playerTotals);
   var t1_team_stats = parseTeamBox(boxScore.teams[1].playerTotals);
-  console.log(t0_team_stats);
+  var t0_players = Array();
+  // rewrite this so the function call takes care of loop somehow
+  for (const player of boxScore.teams[0].playerStats) {
+    var boxPlayer = parsePlayerStats(player);
+    t0_players.push(boxPlayer);
+  }
+  boxAllPlayers[t0_id] = t0_players;
+  var t1_players = Array();
+  for (const player of boxScore.teams[1].playerStats) {
+    var boxPlayer = parsePlayerStats(player);
+    t1_players.push(boxPlayer);
+  }
+  boxAllPlayers[t1_id] = t1_players;
+
   boxTeam[t0_id] = t0_team_stats;
   boxTeam[t1_id] = t1_team_stats;
-  console.log(games);
+  return Array(games, boxTeam, boxAllPlayers);
 }
 
 function parseTeamBox(teamStats) {
@@ -143,33 +106,35 @@ function parsePlayerStats(playerStats) {
   // combine this and team to reduce redundancy?
   // fg3p_pct ==> fg3_pct ??
   var playerBoxStats = Object();
-  playerBoxStats["first_name"] = playerStats.firstName
-  playerBoxStats["last_name"] = playerStats.lastName
-  playerBoxStats["position"] = playerStats.position // null positions?
-  playerBoxStats["minutesPlayed"] = parseInt(playerStats.minutesPlayed, 10)
-  const fgData = splitParse(playerStats.fieldGoalsMade)
-  playerBoxStats["fgm"] = fgData[0]
-  playerBoxStats["fga"] = fgData[1] 
-  const fg3Data = splitParse(playerStats.threePointsMade)
-  playerBoxStats["fg3m"] = fg3Data[0]
-  playerBoxStats["fg3a"] = fg3Data[1]
-  const ftData = splitParse(playerStats.freeThrowsMade)
-  playerBoxStats["ftm"] = ftData[0]
-  playerBoxStats["fta"] = ftData[1]
-  playerBoxStats["total_rebs"] = parseInt(playerStats.totalRebounds, 10)
-  playerBoxStats["o_rebs"] = parseInt(playerStats.offensiveRebounds, 10)
-  playerBoxStats["d_rebs"] = playerBoxStats.total_rebs - playerBoxStats.o_rebs
-  playerBoxStats["assists"] = parseInt(playerBoxStats.assists, 10)
-  playerBoxStats["fouls"] = parseInt(playerBoxStats.personalFouls, 10)
-  playerBoxStats["steals"] = parseInt(playerBoxStats.steals, 10)
-  playerBoxStats["tovs"] = parseInt(playerBoxStats.turnovers, 10)
-  playerBoxStats["blocks"] = parseInt(playerBoxStats.blockedShots, 10)
-  playerBoxStats["fg_pct"] = playerBoxStats.fgm / playerBoxStats.fga
-  playerBoxStats["fg3p_pct"] = playerBoxStats.fg3m / playerBoxStats.fg3a
-  playerBoxStats["ft_pct"] = playerBoxStats.ftm / playerBoxStats.fta
-  playerBoxStats["efg_pct"] = (playerBoxStats.fgm + 0.5*playerBoxStats.fg3m) / playerBoxStats.fga
-  playerBoxStats["fg2p_pct"] = playerBoxStats.fg2m / playerBoxStats.fg2a
+  playerBoxStats["first_name"] = playerStats.firstName;
+  playerBoxStats["last_name"] = playerStats.lastName;
+  playerBoxStats["position"] = playerStats.position; // null positions?
+  playerBoxStats["minutesPlayed"] = parseInt(playerStats.minutesPlayed, 10);
+  const fgData = splitParse(playerStats.fieldGoalsMade);
+  playerBoxStats["fgm"] = fgData[0];
+  playerBoxStats["fga"] = fgData[1];
+  const fg3Data = splitParse(playerStats.threePointsMade);
+  playerBoxStats["fg3m"] = fg3Data[0];
+  playerBoxStats["fg3a"] = fg3Data[1];
+  const ftData = splitParse(playerStats.freeThrowsMade);
+  playerBoxStats["ftm"] = ftData[0];
+  playerBoxStats["fta"] = ftData[1];
+  playerBoxStats["total_rebs"] = parseInt(playerStats.totalRebounds, 10);
+  playerBoxStats["o_rebs"] = parseInt(playerStats.offensiveRebounds, 10);
+  playerBoxStats["d_rebs"] = playerBoxStats.total_rebs - playerBoxStats.o_rebs;
+  playerBoxStats["assists"] = parseInt(playerBoxStats.assists, 10);
+  playerBoxStats["fouls"] = parseInt(playerBoxStats.personalFouls, 10);
+  playerBoxStats["steals"] = parseInt(playerBoxStats.steals, 10);
+  playerBoxStats["tovs"] = parseInt(playerBoxStats.turnovers, 10);
+  playerBoxStats["blocks"] = parseInt(playerBoxStats.blockedShots, 10);
+  playerBoxStats["fg_pct"] = playerBoxStats.fgm / playerBoxStats.fga;
+  playerBoxStats["fg3p_pct"] = playerBoxStats.fg3m / playerBoxStats.fg3a;
+  playerBoxStats["ft_pct"] = playerBoxStats.ftm / playerBoxStats.fta;
+  playerBoxStats["efg_pct"] =
+    (playerBoxStats.fgm + 0.5 * playerBoxStats.fg3m) / playerBoxStats.fga;
+  playerBoxStats["fg2p_pct"] = playerBoxStats.fg2m / playerBoxStats.fg2a;
   return playerBoxStats;
+}
 
 // fill in function for handling the splitting and parsing like above
 function splitParse(stat, split = true) {
