@@ -16,29 +16,39 @@ function getGameID(games) {
 }
 
 function getBoxScores(games) {
-  // add check to make sure it's final?
+  // add check to make sure the game is final?
   var boxScores = new Object();
+  var gameData = new Array();
+  var teamBoxData = new Array();
+  var playerBoxData = new Array();
   var lostGames = new Array();
   for (const gid of games) {
     try {
       // get box scores
       const gameBox = sdv.ncaa.getBoxScore(gid);
       // [games, boxTeam, boxPlayer]
-      gameBox.then((box) => {
-        let boxTransformed = transformBoxScore(box);
-      });
-      boxScores[gid] = boxTransformed;
+      gameBox
+        .then((box) => transformBoxScore(box, gid))
+        .then((boxTransformed) => {
+          // console.log(boxTransformed);
+          gameData.push(boxTransformed.games);
+          teamBoxData.push(boxTransformed.boxTeam);
+          playerBoxData.push(boxTransformed.boxPlayers);
+        });
+      // switch to three arrays and push respective item to each one?
+      // boxScores[gid] = boxTransformed;
     } catch (error) {
       // log game id
+      console.log(error);
       lostGames.push(gid);
     }
   }
-  console.log(lostGames);
-  console.log(Object.keys(boxScores))
+  console.log(`lost games: ${lostGames}`);
+  console.log(gameData);
   return boxScores;
 }
 
-function transformBoxScore(boxScore) {
+function transformBoxScore(boxScore, gameId) {
   var transformed = new Object();
   var games = new Object();
   var boxAllPlayers = new Object();
@@ -46,6 +56,7 @@ function transformBoxScore(boxScore) {
   const t0_id = boxScore.teams[0].teamId;
   const t1_id = boxScore.teams[1].teamId;
   // check this
+  games["game_id"] = gameId;
   games["is_t0_home"] = boxScore.meta.teams[0].homeTeam === "true";
   games["t0_id"] = t0_id;
   games["t1_id"] = t1_id;
@@ -53,26 +64,32 @@ function transformBoxScore(boxScore) {
   // adding created_at timestamps? Where in pipeline does that happen?
 
   var t0_team_stats = parseTeamBox(boxScore.teams[0].playerTotals);
+  t0_team_stats["game_id"] = gameId;
   var t1_team_stats = parseTeamBox(boxScore.teams[1].playerTotals);
+  t1_team_stats["game_id"] = gameId;
   var t0_players = Array();
   // rewrite this so the function call takes care of loop somehow
   for (const player of boxScore.teams[0].playerStats) {
     var boxPlayer = parsePlayerStats(player);
+    boxPlayer["game_id"] = gameId;
     t0_players.push(boxPlayer);
   }
   boxAllPlayers[t0_id] = t0_players;
   var t1_players = Array();
   for (const player of boxScore.teams[1].playerStats) {
     var boxPlayer = parsePlayerStats(player);
+    boxPlayer["game_id"] = gameId;
     t1_players.push(boxPlayer);
   }
   boxAllPlayers[t1_id] = t1_players;
 
   boxTeam[t0_id] = t0_team_stats;
   boxTeam[t1_id] = t1_team_stats;
-  var foo = Array(games, boxTeam, boxAllPlayers);
-  console.log(foo);
-  return foo;
+  var allGameData = new Object();
+  allGameData["games"] = games;
+  allGameData["boxTeam"] = boxTeam;
+  allGameData["boxPlayers"] = boxAllPlayers;
+  return allGameData;
 }
 
 function parseTeamBox(teamStats) {
