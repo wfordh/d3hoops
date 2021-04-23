@@ -28,13 +28,15 @@ function getBoxScores(games) {
       const gameBox = sdv.ncaa.getBoxScore(gid);
       // [games, boxTeam, boxPlayer]
       gameBox
-        .then((box) => transformBoxScore(box, gid))
-        .then((boxTransformed) => {
-          // console.log(boxTransformed);
-          gameData.push(boxTransformed.games);
-          teamBoxData.push(boxTransformed.boxTeam);
-          playerBoxData.push(boxTransformed.boxPlayers);
-        });
+          .then((box) => transformBoxScore(box, gid))
+          .then(() => {
+              (boxTransformed)
+//            gameData.push(boxTransformed.games);
+//            teamBoxData.push(boxTransformed.boxTeam);
+//            playerBoxData.push(boxTransformed.boxPlayers);
+          })
+      ;
+      console.log(boxTransformed)
       // switch to three arrays and push respective item to each one?
       // boxScores[gid] = boxTransformed;
     } catch (error) {
