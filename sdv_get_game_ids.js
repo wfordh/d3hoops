@@ -23,19 +23,18 @@ function getBoxScores(games) {
     try {
       // get box scores
       const gameBox = sdv.ncaa.getBoxScore(gid);
-      if (gid === "3942769") {
-        // [games, boxTeam, boxPlayer]
-        gameBox.then((box) => {
-	let boxTransformed = transformBoxScore(box)});
-        console.log(boxTransformed);
-      }
-      boxScores[gid] = gameBox;
+      // [games, boxTeam, boxPlayer]
+      gameBox.then((box) => {
+        let boxTransformed = transformBoxScore(box);
+      });
+      boxScores[gid] = boxTransformed;
     } catch (error) {
       // log game id
       lostGames.push(gid);
     }
   }
   console.log(lostGames);
+  console.log(Object.keys(boxScores))
   return boxScores;
 }
 
@@ -72,7 +71,7 @@ function transformBoxScore(boxScore) {
   boxTeam[t0_id] = t0_team_stats;
   boxTeam[t1_id] = t1_team_stats;
   var foo = Array(games, boxTeam, boxAllPlayers);
-  console.log(foo)
+  console.log(foo);
   return foo;
 }
 
