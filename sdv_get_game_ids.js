@@ -15,6 +15,30 @@ function getGameID(games) {
   return gid;
 }
 
+async function getBoxScoresAsync(games) {
+  // add check to make sure the game is final?
+  var promises = [];
+  var boxScores = [];
+  for (const gid of games) {
+    let gamebox = sdv.ncaa.getBoxScore(gid);
+    promises.push(gamebox);
+  }
+  try {
+    let gameData = Promise.all(promises);
+    console.log("Collected promises:");
+    console.log(gameData);
+    //    boxScores = gameData.map( (item) => transformBoxScore(item))
+    let boxScores = Object.keys(gameData).map((key) =>
+      transformBoxScore(gameData[key], key)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("Box Scores");
+  console.log(boxScores);
+  return boxScores;
+}
+
 function getBoxScores(games) {
   // add check to make sure the game is final?
   var boxScores = new Object();
@@ -27,16 +51,17 @@ function getBoxScores(games) {
       // get box scores
       const gameBox = sdv.ncaa.getBoxScore(gid);
       // [games, boxTeam, boxPlayer]
+      // let boxData = transformBoxScore(gameBox, gid)
+      // gameData.push(boxData.games)
       gameBox
-          .then((box) => transformBoxScore(box, gid))
-          .then(() => {
-              (boxTransformed)
-//            gameData.push(boxTransformed.games);
-//            teamBoxData.push(boxTransformed.boxTeam);
-//            playerBoxData.push(boxTransformed.boxPlayers);
-          })
-      ;
-      console.log(boxTransformed)
+        .then((box) => transformBoxScore(box, gid))
+        .then(() => {
+          boxTransformed;
+          //            gameData.push(boxTransformed.games);
+          //            teamBoxData.push(boxTransformed.boxTeam);
+          //            playerBoxData.push(boxTransformed.boxPlayers);
+        });
+      console.log(boxTransformed);
       // switch to three arrays and push respective item to each one?
       // boxScores[gid] = boxTransformed;
     } catch (error) {
@@ -51,6 +76,8 @@ function getBoxScores(games) {
 }
 
 function transformBoxScore(boxScore, gameId) {
+  console.log("game id");
+  console.log(gameId);
   var transformed = new Object();
   var games = new Object();
   var boxAllPlayers = new Object();
@@ -177,7 +204,8 @@ const scores = sdv.ncaa.getScoreboard(
 );
 scores
   .then((result) => getGameID(result))
-  .then((boxData) => getBoxScores(boxData))
+  .then((boxData) => getBoxScoresAsync(boxData))
+  .then((boxScores) => console.log(boxScores))
   .catch((err) => console.log(err));
 
 // not working
