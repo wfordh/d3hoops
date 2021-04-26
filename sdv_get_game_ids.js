@@ -15,54 +15,20 @@ function getGameID(games) {
   return gid;
 }
 
-async function getBoxScoresAsync(games) {
+async function getBoxScores(games) {
   // add check to make sure the game is final?
+  // change promises to an object?
+  // depends on pg-promise
   var promises = [];
   var boxScores = [];
   for (const gid of games) {
     let gamebox = await sdv.ncaa.getBoxScore(gid);
-    let boxScores = transformBoxScore(gamebox, gid)
+    let boxScores = transformBoxScore(gamebox, gid);
     promises.push(boxScores);
   }
-  console.log(`Length of promises array: ${promises.length}`)
-
+  console.log(`Length of promises array: ${promises.length}`);
+  // [games, boxTeam, boxPlayer]
   return promises;
-}
-
-function getBoxScores(games) {
-  // add check to make sure the game is final?
-  var boxScores = new Object();
-  var gameData = new Array();
-  var teamBoxData = new Array();
-  var playerBoxData = new Array();
-  var lostGames = new Array();
-  for (const gid of games) {
-    try {
-      // get box scores
-      const gameBox = sdv.ncaa.getBoxScore(gid);
-      // [games, boxTeam, boxPlayer]
-      // let boxData = transformBoxScore(gameBox, gid)
-      // gameData.push(boxData.games)
-      gameBox
-        .then((box) => transformBoxScore(box, gid))
-        .then(() => {
-          boxTransformed;
-          //            gameData.push(boxTransformed.games);
-          //            teamBoxData.push(boxTransformed.boxTeam);
-          //            playerBoxData.push(boxTransformed.boxPlayers);
-        });
-      console.log(boxTransformed);
-      // switch to three arrays and push respective item to each one?
-      // boxScores[gid] = boxTransformed;
-    } catch (error) {
-      // log game id
-      console.log(error);
-      lostGames.push(gid);
-    }
-  }
-  console.log(`lost games: ${lostGames}`);
-  console.log(gameData);
-  return boxScores;
 }
 
 function transformBoxScore(boxScore, gameId) {
@@ -192,7 +158,7 @@ const scores = sdv.ncaa.getScoreboard(
 );
 scores
   .then((result) => getGameID(result))
-  .then((boxData) => getBoxScoresAsync(boxData))
+  .then((boxData) => getBoxScores(boxData))
   .then((boxScores) => console.log(boxScores))
   .catch((err) => console.log(err));
 
