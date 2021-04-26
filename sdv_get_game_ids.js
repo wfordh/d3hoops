@@ -20,23 +20,13 @@ async function getBoxScoresAsync(games) {
   var promises = [];
   var boxScores = [];
   for (const gid of games) {
-    let gamebox = sdv.ncaa.getBoxScore(gid);
-    promises.push(gamebox);
+    let gamebox = await sdv.ncaa.getBoxScore(gid);
+    let boxScores = transformBoxScore(gamebox, gid)
+    promises.push(boxScores);
   }
-  try {
-    let gameData = Promise.all(promises);
-    console.log("Collected promises:");
-    console.log(gameData);
-    //    boxScores = gameData.map( (item) => transformBoxScore(item))
-    let boxScores = Object.keys(gameData).map((key) =>
-      transformBoxScore(gameData[key], key)
-    );
-  } catch (error) {
-    console.log(error);
-  }
-  console.log("Box Scores");
-  console.log(boxScores);
-  return boxScores;
+  console.log(`Length of promises array: ${promises.length}`)
+
+  return promises;
 }
 
 function getBoxScores(games) {
@@ -76,8 +66,6 @@ function getBoxScores(games) {
 }
 
 function transformBoxScore(boxScore, gameId) {
-  console.log("game id");
-  console.log(gameId);
   var transformed = new Object();
   var games = new Object();
   var boxAllPlayers = new Object();
