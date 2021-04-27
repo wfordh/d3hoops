@@ -20,14 +20,22 @@ async function getBoxScores(games) {
   // change promises to an object?
   // depends on pg-promise
   var promises = [];
-  var boxScores = [];
   for (const gid of games) {
     let gamebox = await sdv.ncaa.getBoxScore(gid);
-    let boxScores = transformBoxScore(gamebox, gid);
-    promises.push(boxScores);
+    let transformed = transformBoxScore(gamebox, gid);
+    promises.push(transformed)
   }
-  console.log(`Length of promises array: ${promises.length}`);
   // [games, boxTeam, boxPlayer]
+  console.log(promises[0])
+  var allGames = [];
+  var allTeamBox = [];
+  var allPlayersBox = [];
+  // not working...maybe do it in another function?
+  for (let gameNum = 0; gameNum < promises.length; gameNum++) {
+    allGames.push(promises[gameNum].gameData)
+    allTeamBox.push(promises[gameNum].boxTeam)
+    allPlayersBox.push(promises[gameNum].boxPlayers) 
+  }
   return promises;
 }
 
@@ -159,7 +167,6 @@ const scores = sdv.ncaa.getScoreboard(
 scores
   .then((result) => getGameID(result))
   .then((boxData) => getBoxScores(boxData))
-  .then((boxScores) => console.log(boxScores))
   .catch((err) => console.log(err));
 
 // not working
