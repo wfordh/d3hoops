@@ -1,6 +1,6 @@
 var sdv = require("sportsdataverse");
-const { Pool, Client } = require("pg");
-const pgp = require('pg-promise');
+const pgp = require("pg-promise")();
+require("dotenv").config();
 
 function getGameID(games) {
   var gid = Array();
@@ -16,8 +16,98 @@ function getGameID(games) {
   return gid;
 }
 
-function writeData() {
+async function writeData(data, dataType, db) {
+  console.log(dataType);
+  if (dataType === "games") {
+    console.log("foobar");
+    const tableName = "games_testtest";
+    const columnNames = [
+      "game_id",
+      "t0_id",
+      "t1_id",
+      "is_t0_home",
+      "game_date",
+      { name: "createdAt", mod: "^", def: "CURRENT_TIMESTAMP" },
+    ];
+    const cs = new pgp.helpers.ColumnSet(columnNames, {
+      table: { table: tableName, schema: "postgres" },
+    });
+    await db.none(pgp.helpers.insert(data, cs));
+  } else if (dataType === "teamBox") {
+    const tableName = "box_teams_testtest";
+    const columnNames = [
+      "game_id",
+      "team_id",
+      "fgm",
+      "fga",
+      "fg3m",
+      "fg3a",
+      "fg2m",
+      "fg2a",
+      "ftm",
+      "fta",
+      "total_rebs",
+      "o_rebs",
+      "d_rebs",
+      "assists",
+      "fouls",
+      "steals",
+      "tovs",
+      "blocks",
+      "points",
+      "fg_pct",
+      "fg3p_pct",
+      "ft_pct",
+      "efg_pct",
+      "fg2p_pct",
+      { name: "createdAt", mod: "^", def: "CURRENT_TIMESTAMP" },
+    ];
+    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
+    await db.none(pgp.helpers.insert(data, cs));
+  } else if (dataType === "playersBox") {
+    const tableName = "box_players_testtest";
+    const columnNames = [
+      "game_id",
+      "team_id",
+      "first_name",
+      "last_name",
+      "position",
+      "minutes_played",
+      "fgm",
+      "fga",
+      "fg3m",
+      "fg3a",
+      "fg2m",
+      "fg2a",
+      "ftm",
+      "fta",
+      "total_rebs",
+      "o_rebs",
+      "d_rebs",
+      "assists",
+      "fouls",
+      "steals",
+      "tovs",
+      "blocks",
+      "points",
+      "fg_pct",
+      "3p_pct",
+      "ft_pct",
+      "efg_pct",
+      "fg2p_pct",
+      { name: "createdAt", mod: "^", def: "CURRENT_TIMESTAMP" },
+    ];
+    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
+    await db.none(pgp.helpers.insert(data, cs));
+  } else {
+    const tableName = "";
+    const columnNames = [];
+  }
 
+  // if need columns in order, use Objects.assign()?
+  // https://stackoverflow.com/questions/19457337/how-to-add-a-property-at-the-beginning-of-an-object-in-javascript
+  // const cs = new pgp.helpers.ColumnSet(columnNames, {table: tableName})
+  // await db.none(pgp.helpers.insert(data, cs))
 }
 
 async function getBoxScores(games) {
@@ -40,9 +130,13 @@ async function getBoxScores(games) {
     allTeamBox.push(Object.values(promises[gameNum].boxTeam));
     allPlayersBox.push(promises[gameNum].boxPlayers);
   }
-  console.log(allGames[0]);
+  const cn = `postgres://${process.env.DB_HOST}:${process.env.DB_PORT}`;
+  const db = pgp(cn);
+
   console.log(allTeamBox[0]);
-  return promises;
+  writeData(allGames, "games", db).catch((err) => console.log(err));
+  writeData(allTeamBox, "teamBox", db).catch((err) => console.log(err));
+  writeData(allPlayersBox, "playersBox", db).catch((err) => console.log(err));
 }
 
 function transformBoxScore(boxScore, gameId) {
@@ -176,6 +270,7 @@ const scores = sdv.ncaa.getScoreboard(
 scores
   .then((result) => getGameID(result))
   .then((boxData) => getBoxScores(boxData))
+  .then(() => console.log("Done! Check the tables"))
   .catch((err) => console.log(err));
 
 // not working
