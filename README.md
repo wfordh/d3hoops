@@ -10,3 +10,4 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
   - Current design: games, boxTeams, boxPlayers
     - When is the best time to write to the db? When works best for the code?
 - Get one day/week of box data into the database
+- Look into using DBT here?

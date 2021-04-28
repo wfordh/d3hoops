@@ -1,5 +1,6 @@
 var sdv = require("sportsdataverse");
 const { Pool, Client } = require("pg");
+const pgp = require('pg-promise');
 
 function getGameID(games) {
   var gid = Array();
@@ -15,27 +16,32 @@ function getGameID(games) {
   return gid;
 }
 
+function writeData() {
+
+}
+
 async function getBoxScores(games) {
   // add check to make sure the game is final?
   // change promises to an object?
   // depends on pg-promise
   var promises = [];
   for (const gid of games) {
-    let gamebox = await sdv.ncaa.getBoxScore(gid);
-    let transformed = transformBoxScore(gamebox, gid);
-    promises.push(transformed)
+    let gameBox = await sdv.ncaa.getBoxScore(gid);
+    let transformed = transformBoxScore(gameBox, parseInt(gid, 10));
+    promises.push(transformed);
   }
   // [games, boxTeam, boxPlayer]
-  console.log(promises[0])
   var allGames = [];
   var allTeamBox = [];
   var allPlayersBox = [];
   // not working...maybe do it in another function?
   for (let gameNum = 0; gameNum < promises.length; gameNum++) {
-    allGames.push(promises[gameNum].gameData)
-    allTeamBox.push(promises[gameNum].boxTeam)
-    allPlayersBox.push(promises[gameNum].boxPlayers) 
+    allGames.push(promises[gameNum].gameData);
+    allTeamBox.push(Object.values(promises[gameNum].boxTeam));
+    allPlayersBox.push(promises[gameNum].boxPlayers);
   }
+  console.log(allGames[0]);
+  console.log(allTeamBox[0]);
   return promises;
 }
 
@@ -46,7 +52,6 @@ function transformBoxScore(boxScore, gameId) {
   var boxTeam = new Object();
   const t0_id = boxScore.teams[0].teamId;
   const t1_id = boxScore.teams[1].teamId;
-  // check this
   games["game_id"] = gameId;
   games["is_t0_home"] = boxScore.meta.teams[0].homeTeam === "true";
   games["t0_id"] = t0_id;
@@ -56,13 +61,16 @@ function transformBoxScore(boxScore, gameId) {
 
   var t0_team_stats = parseTeamBox(boxScore.teams[0].playerTotals);
   t0_team_stats["game_id"] = gameId;
+  t0_team_stats["team_id"] = t0_id;
   var t1_team_stats = parseTeamBox(boxScore.teams[1].playerTotals);
   t1_team_stats["game_id"] = gameId;
+  t1_team_stats["team_id"] = t1_id;
   var t0_players = Array();
   // rewrite this so the function call takes care of loop somehow
   for (const player of boxScore.teams[0].playerStats) {
     var boxPlayer = parsePlayerStats(player);
     boxPlayer["game_id"] = gameId;
+    boxPlayer["team_id"] = t0_id;
     t0_players.push(boxPlayer);
   }
   boxAllPlayers[t0_id] = t0_players;
@@ -70,6 +78,7 @@ function transformBoxScore(boxScore, gameId) {
   for (const player of boxScore.teams[1].playerStats) {
     var boxPlayer = parsePlayerStats(player);
     boxPlayer["game_id"] = gameId;
+    boxPlayer["team_id"] = t1_id;
     t1_players.push(boxPlayer);
   }
   boxAllPlayers[t1_id] = t1_players;
@@ -77,7 +86,7 @@ function transformBoxScore(boxScore, gameId) {
   boxTeam[t0_id] = t0_team_stats;
   boxTeam[t1_id] = t1_team_stats;
   var allGameData = new Object();
-  allGameData["games"] = games;
+  allGameData["gameData"] = games;
   allGameData["boxTeam"] = boxTeam;
   allGameData["boxPlayers"] = boxAllPlayers;
   return allGameData;
