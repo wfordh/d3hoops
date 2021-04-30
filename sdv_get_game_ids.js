@@ -16,93 +16,90 @@ function getGameID(games) {
   return gid;
 }
 
-async function writeData(data, dataType, db) {
-  console.log(dataType);
-  if (dataType === "games") {
-    console.log("foobar");
-    const tableName = "games_testtest";
-    const columnNames = [
-      "game_id",
-      "t0_id",
-      "t1_id",
-      "is_t0_home",
-      "game_date",
-      { name: "createdAt", mod: "^", def: "CURRENT_TIMESTAMP" },
-    ];
-    const cs = new pgp.helpers.ColumnSet(columnNames, {
-      table: { table: tableName, schema: "postgres" },
-    });
-    await db.none(pgp.helpers.insert(data, cs));
-  } else if (dataType === "teamBox") {
-    const tableName = "box_teams_testtest";
-    const columnNames = [
-      "game_id",
-      "team_id",
-      "fgm",
-      "fga",
-      "fg3m",
-      "fg3a",
-      "fg2m",
-      "fg2a",
-      "ftm",
-      "fta",
-      "total_rebs",
-      "o_rebs",
-      "d_rebs",
-      "assists",
-      "fouls",
-      "steals",
-      "tovs",
-      "blocks",
-      "points",
-      "fg_pct",
-      "fg3p_pct",
-      "ft_pct",
-      "efg_pct",
-      "fg2p_pct",
-      { name: "createdAt", mod: "^", def: "CURRENT_TIMESTAMP" },
-    ];
-    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
-    await db.none(pgp.helpers.insert(data, cs));
-  } else if (dataType === "playersBox") {
-    const tableName = "box_players_testtest";
-    const columnNames = [
-      "game_id",
-      "team_id",
-      "first_name",
-      "last_name",
-      "position",
-      "minutes_played",
-      "fgm",
-      "fga",
-      "fg3m",
-      "fg3a",
-      "fg2m",
-      "fg2a",
-      "ftm",
-      "fta",
-      "total_rebs",
-      "o_rebs",
-      "d_rebs",
-      "assists",
-      "fouls",
-      "steals",
-      "tovs",
-      "blocks",
-      "points",
-      "fg_pct",
-      "3p_pct",
-      "ft_pct",
-      "efg_pct",
-      "fg2p_pct",
-      { name: "createdAt", mod: "^", def: "CURRENT_TIMESTAMP" },
-    ];
-    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
-    await db.none(pgp.helpers.insert(data, cs));
-  } else {
-    const tableName = "";
-    const columnNames = [];
-  }
+async function writeData(data, db) {
+  const tableName_games = "games_testtest";
+  const columnNames_games = [
+    "game_id",
+    "t0_id",
+    "t1_id",
+    "is_t0_home",
+    "game_date",
+    { name: "created_at", mod: "^", def: "CURRENT_TIMESTAMP" },
+  ];
+  const cs_games = new pgp.helpers.ColumnSet(columnNames_games, {
+    table: tableName_games, // {table: tableName, schema: 'd3_hoops'},
+  });
+  await db.none(pgp.helpers.insert(data[0], cs_games));
+
+  const tableName_teamBox = "box_teams_testtest";
+  const columnNames_teamBox = [
+    "game_id",
+    "team_id",
+    "fgm",
+    "fga",
+    "fg3m",
+    "fg3a",
+    "fg2m",
+    "fg2a",
+    "ftm",
+    "fta",
+    "total_rebs",
+    "o_rebs",
+    "d_rebs",
+    "assists",
+    "fouls",
+    "steals",
+    "tovs",
+    "blocks",
+    "points",
+    "fg_pct",
+    "fg3p_pct",
+    "ft_pct",
+    "efg_pct",
+    "fg2p_pct",
+    { name: "created_at", mod: "^", def: "CURRENT_TIMESTAMP" },
+  ];
+  const cs_teamBox = new pgp.helpers.ColumnSet(columnNames_teamBox, {
+    table: tableName_teamBox,
+  });
+  await db.none(pgp.helpers.insert(data[1], cs_teamBox));
+
+  const tableName_playersBox = "box_players_testtest";
+  const columnNames_playersBox = [
+    "game_id",
+    "team_id",
+    "first_name",
+    "last_name",
+    "position",
+    "minutes_played",
+    "fgm",
+    "fga",
+    "fg3m",
+    "fg3a",
+    "fg2m",
+    "fg2a",
+    "ftm",
+    "fta",
+    "total_rebs",
+    "o_rebs",
+    "d_rebs",
+    "assists",
+    "fouls",
+    "steals",
+    "tovs",
+    "blocks",
+    "points",
+    "fg_pct",
+    "3p_pct",
+    "ft_pct",
+    "efg_pct",
+    "fg2p_pct",
+    { name: "created_at", mod: "^", def: "CURRENT_TIMESTAMP" },
+  ];
+  const cs_playersBox = new pgp.helpers.ColumnSet(columnNames_playersBox, {
+    table: tableName_playersBox,
+  });
+  await db.none(pgp.helpers.insert(data[2], cs_playersBox));
 
   // if need columns in order, use Objects.assign()?
   // https://stackoverflow.com/questions/19457337/how-to-add-a-property-at-the-beginning-of-an-object-in-javascript
@@ -130,13 +127,28 @@ async function getBoxScores(games) {
     allTeamBox.push(Object.values(promises[gameNum].boxTeam));
     allPlayersBox.push(promises[gameNum].boxPlayers);
   }
-  const cn = `postgres://${process.env.DB_HOST}:${process.env.DB_PORT}`;
+  console.log(allGames[0])
+  console.log(allTeamBox[0:1]
+  const cn = `postgres://${process.env.DB_USER}:@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
   const db = pgp(cn);
 
-  console.log(allTeamBox[0]);
-  writeData(allGames, "games", db).catch((err) => console.log(err));
-  writeData(allTeamBox, "teamBox", db).catch((err) => console.log(err));
-  writeData(allPlayersBox, "playersBox", db).catch((err) => console.log(err));
+  // ignore this part for now
+  process.exit()
+  let sco;
+  db.connect()
+    .then((obj) => {
+      sco = obj;
+      return writeData([allGames, allTeamBox, allPlayersBox], obj);
+    })
+    .catch((err) => console.log(err))
+    .finally(() => {
+      if (sco) {
+        sco.done();
+      }
+    });
+  // writeData(allGames, "games", c).catch((err) => console.log(err));
+  // writeData(allTeamBox, "teamBox", c).catch((err) => console.log(err));
+  // writeData(allPlayersBox, "playersBox", c).catch((err) => console.log(err));
 }
 
 function transformBoxScore(boxScore, gameId) {
@@ -150,7 +162,7 @@ function transformBoxScore(boxScore, gameId) {
   games["is_t0_home"] = boxScore.meta.teams[0].homeTeam === "true";
   games["t0_id"] = t0_id;
   games["t1_id"] = t1_id;
-  games["game_date"] = boxScore.updatedTimestamp;
+  games["game_date"] = boxScore.updatedTimestamp.replace("ET", "EST");
   // adding created_at timestamps? Where in pipeline does that happen?
 
   var t0_team_stats = parseTeamBox(boxScore.teams[0].playerTotals);
