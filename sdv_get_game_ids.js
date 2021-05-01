@@ -107,7 +107,7 @@ async function writeData(data, db) {
   // await db.none(pgp.helpers.insert(data, cs))
 }
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function getBoxScores(games) {
@@ -291,9 +291,9 @@ const scores = sdv.ncaa.getScoreboard(
   (day = 23)
 );
 // feb 2020: 14, 15, 16, 18, 19 done. 17 bad.
-// jan 2020: 19, 20, 21, 22, 23 done. 
+// jan 2020: 19, 20, 21, 22, 23 done.
 // feb 2019: doesn't seem to be formatting the data correctly...
-// mar 2021: 15, 16, 17, 18, 19, 23 done. 20 and 21 bad. 
+// mar 2021: 15, 16, 17, 18, 19, 23 done. 20 and 21 bad.
 scores
   .then((result) => getGameID(result))
   .then((boxData) => getBoxScores(boxData))
