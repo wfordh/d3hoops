@@ -90,7 +90,7 @@ async function writeData(data, db) {
     "blocks",
     "points",
     "fg_pct",
-    "3p_pct",
+    "fg3p_pct",
     "ft_pct",
     "efg_pct",
     "fg2p_pct",
@@ -124,16 +124,20 @@ async function getBoxScores(games) {
   // not working...maybe do it in another function?
   for (let gameNum = 0; gameNum < promises.length; gameNum++) {
     allGames.push(promises[gameNum].gameData);
-    allTeamBox.push(Object.values(promises[gameNum].boxTeam));
-    allPlayersBox.push(promises[gameNum].boxPlayers);
+    for (const team of Object.values(promises[gameNum].boxTeam)) {
+      allTeamBox.push(team);
+    }
+    // allTeamBox.push(Object.values(promises[gameNum].boxTeam[0]));
+    // need to similarly pull out the players here
+    for (const player of Object.values(promises[gameNum].boxPlayers)) {
+      allPlayersBox.push(player.shift());
+    }
+    // allPlayersBox.push(promises[gameNum].boxPlayers);
   }
-  console.log(allGames[0])
-  console.log(allTeamBox[0:1]
   const cn = `postgres://${process.env.DB_USER}:@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
   const db = pgp(cn);
 
   // ignore this part for now
-  process.exit()
   let sco;
   db.connect()
     .then((obj) => {
@@ -234,13 +238,15 @@ function parsePlayerStats(playerStats) {
   playerBoxStats["first_name"] = playerStats.firstName;
   playerBoxStats["last_name"] = playerStats.lastName;
   playerBoxStats["position"] = playerStats.position; // null positions?
-  playerBoxStats["minutesPlayed"] = parseInt(playerStats.minutesPlayed, 10);
+  playerBoxStats["minutes_played"] = parseInt(playerStats.minutesPlayed, 10);
   const fgData = splitParse(playerStats.fieldGoalsMade);
   playerBoxStats["fgm"] = fgData[0];
   playerBoxStats["fga"] = fgData[1];
   const fg3Data = splitParse(playerStats.threePointsMade);
   playerBoxStats["fg3m"] = fg3Data[0];
   playerBoxStats["fg3a"] = fg3Data[1];
+  playerBoxStats["fg2m"] = fgData[0] - fg3Data[0];
+  playerBoxStats["fg2a"] = fgData[1] - fg3Data[1];
   const ftData = splitParse(playerStats.freeThrowsMade);
   playerBoxStats["ftm"] = ftData[0];
   playerBoxStats["fta"] = ftData[1];
@@ -252,6 +258,7 @@ function parsePlayerStats(playerStats) {
   playerBoxStats["steals"] = parseInt(playerBoxStats.steals, 10);
   playerBoxStats["tovs"] = parseInt(playerBoxStats.turnovers, 10);
   playerBoxStats["blocks"] = parseInt(playerBoxStats.blockedShots, 10);
+  playerBoxStats["points"] = parseInt(playerBoxStats.points, 10);
   playerBoxStats["fg_pct"] = playerBoxStats.fgm / playerBoxStats.fga;
   playerBoxStats["fg3p_pct"] = playerBoxStats.fg3m / playerBoxStats.fg3a;
   playerBoxStats["ft_pct"] = playerBoxStats.ftm / playerBoxStats.fta;
