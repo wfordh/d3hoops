@@ -106,6 +106,9 @@ async function writeData(data, db) {
   // const cs = new pgp.helpers.ColumnSet(columnNames, {table: tableName})
   // await db.none(pgp.helpers.insert(data, cs))
 }
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function getBoxScores(games) {
   // add check to make sure the game is final?
@@ -113,6 +116,7 @@ async function getBoxScores(games) {
   // depends on pg-promise
   var promises = [];
   for (const gid of games) {
+    await sleep(1100);
     let gameBox = await sdv.ncaa.getBoxScore(gid);
     let transformed = transformBoxScore(gameBox, parseInt(gid, 10));
     promises.push(transformed);
@@ -284,7 +288,7 @@ const scores = sdv.ncaa.getScoreboard(
   (division = "d3"),
   (year = 2020),
   (month = 2),
-  (day = 12)
+  (day = 17)
 );
 scores
   .then((result) => getGameID(result))
