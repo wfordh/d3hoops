@@ -5,10 +5,11 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
 
 ## Next Steps
 - Designing and setting up the database
-  - Figuring out how to insert multiple rows at once
-    - [pg-promise insert](https://vitaly-t.github.io/pg-promise/helpers.html#.insert)
   - Current design: games, boxTeams, boxPlayers
     - When is the best time to write to the db? When works best for the code?
 - Get one day/week of box data into the database
 - Look into using DBT here?
 - Handle games w/o boxscores better
+- Write lengthier "about" / "overview"
+- Reorg code so it makes more sense and easier to backfill / run daily.
+  - Add GH action to run it everyday?
