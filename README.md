@@ -13,3 +13,5 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
 - Write lengthier "about" / "overview"
 - Reorg code so it makes more sense and easier to backfill / run daily.
   - Add GH action to run it everyday?
+- Find way to make a teams table in the db
+- Decouple db write code so it doesn't live inside another function
