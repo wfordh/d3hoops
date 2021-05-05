@@ -272,7 +272,20 @@ function parsePlayerStats(playerStats) {
   return playerBoxStats;
 }
 
-// fill in function for handling the splitting and parsing like above
+function getTeamInfo(teamData) {
+  // could also just remove the homeTeam part of teamData?
+  // add all of these to a csv first and not to database so I can de-dupe?
+  let team_data = new Object()
+
+  team_data['team_id'] = teamData.id
+  team_data["team_name"] = teamData.shortName
+  team_data['nickname'] = teamData.nickName
+  team_data["color"] = teamData.color
+  team_data["team_abbrev"] = teamData.sixCharAbbr 
+  // team_data["season"] should go in at some point...
+  return team_data
+}
+
 function splitParse(stat, split = true) {
   if (split) {
     return stat.split("-").map(function (x) {
