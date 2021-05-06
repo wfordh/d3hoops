@@ -166,6 +166,7 @@ function transformBoxScore(boxScore, gameId) {
   var boxTeam = new Object();
   const t0_id = boxScore.teams[0].teamId;
   const t1_id = boxScore.teams[1].teamId;
+  console.log(getTeamInfo(boxScore.meta.teams[0]));
   games["game_id"] = gameId;
   games["is_t0_home"] = boxScore.meta.teams[0].homeTeam === "true";
   games["t0_id"] = t0_id;
