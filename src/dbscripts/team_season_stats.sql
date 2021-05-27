@@ -18,13 +18,13 @@ select
 --  , round(season_fgm / season_fga, 2) as fg_pct
   , sum(fg2m) as season_fg2m
   , sum(fg2a) as season_fg2a
-  , round(season_fg2m / season_fg2a, 2) as fg2_pct
+  , round(sum(fg2m) / sum(fg2a), 2) as fg2_pct
   , sum(fg3m) as season_fg3m
   , sum(fg3a) as season_fg3a
-  , round(season_fg3m / season_fg3a, 2) as fg3_pct
+  , round(sum(fg3m) / sum(fg3a), 2) as fg3_pct
   , sum(ftm) as season_ftm
   , sum(fta) as season_fta
-  , round(season_ftm / season_fta, 2) as ft_pct
+  , round(sum(ftm) / sum(fta), 2) as ft_pct
 from box_teams_testtest as bt
 inner join games_testtest as g on
   g.game_id = bt.game_id and (g.t0_id = bt.team_id or g.t1_id = bt.team_id)
