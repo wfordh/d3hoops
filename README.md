@@ -7,7 +7,6 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
 - Designing and setting up the database
   - Current design: games, boxTeams, boxPlayers
     - When is the best time to write to the db? When works best for the code?
-- Get one day/week of box data into the database
 - Look into using DBT here?
 - Handle games w/o boxscores better
 - Write lengthier "about" / "overview"
@@ -15,3 +14,5 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
   - Add GH action to run it everyday?
 - Find way to make a teams table in the db
 - Decouple db write code so it doesn't live inside another function
+- Add player IDs
+- Seems like not enough players for all the teams in the test DBs
