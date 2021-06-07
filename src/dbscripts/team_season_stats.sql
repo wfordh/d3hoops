@@ -33,5 +33,5 @@ group by
   , season
 ;
 
-create index pgs_team on team_season_stats (team_id);
-create index pgs_season on team_season_stats (season);
+create index tts_team on team_season_stats (team_id);
+create index tts_season on team_season_stats (season);

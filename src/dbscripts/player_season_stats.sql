@@ -39,5 +39,5 @@ group by
   , position
 ;
 
-create index pgs_team on team_season_stats (team_id);
-create index pgs_season on team_season_stats (season);
+create index pts_player on player_season_stats (team_id, first_name, last_name, position);
+create index pts_season on player_season_stats (season);
