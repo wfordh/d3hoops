@@ -16,3 +16,4 @@ Project for gathering d3 hoops stats and displaying them in a [kenpom](https://k
 - Decouple db write code so it doesn't live inside another function
 - Add player IDs
 - Seems like not enough players for all the teams in the test DBs
+- Unrelated but interesting little [JS applet](https://editor.p5js.org/andrewcosmo/sketches/H4eUrz1pW)
