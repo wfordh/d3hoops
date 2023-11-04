@@ -1,6 +1,7 @@
 drop table if exists box_teams_testtest;
 create table box_teams_testtest (
-	game_id int
+	id serial PRIMARY KEY
+	, game_id int
 	, team_id int
 	, fgm smallint
 	, fga smallint
@@ -16,4 +17,5 @@ create table box_teams_testtest (
 	, tovs smallint
 	, blocks smallint
 	, points smallint
+	, created_at timestamp
 );

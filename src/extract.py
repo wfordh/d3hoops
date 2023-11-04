@@ -10,6 +10,7 @@
 # once some data is in there, start on dbt scripts
 
 import argparse
+from datetime import datetime
 import time
 from typing import Union
 
@@ -103,6 +104,7 @@ def get_box_scores(game_urls: list):
         # just until async / await?
         time.sleep(1.8)
         game_box = get_game_box_score(url)
+        # do I actually want this?
         if game_box["meta"]["status"] != "Final":
             continue
         transformed_box = transform_box_score(game_box, url)
@@ -113,12 +115,15 @@ def get_box_scores(game_urls: list):
     all_players_box = list()
 
     for game in games:
+        game["game_data"]["created_at"] = datetime.now().isoformat()
         all_games.append(game["game_data"])
 
         for team in game["box_teams"]:
+            team["created_at"] = datetime.now().isoformat()
             all_team_box.append(team)
 
         for player in game["box_players"]:
+            player["created_at"] = datetime.now().isoformat()
             all_players_box.append(player)
 
     write_data(
@@ -242,6 +247,7 @@ def main():
     extract_date = command_args.pop("date", None)
     # probably want some sort of error handling to make sure of this...
     year, month, day = extract_date.split("-")
+    # test day was 2023-03-10
     scoreboard = get_scoreboard(
         sport="basketball-men", division="d3", year=year, month=month, day=day
     )

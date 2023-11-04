@@ -6,4 +6,5 @@ create table games_testtest (
 	, team_one_id int
 	, is_team_zero_home bool
 	, game_date date
+	, created_at timestamp
 )
