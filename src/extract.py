@@ -11,6 +11,7 @@
 
 import argparse
 from datetime import datetime
+import logging
 import time
 from typing import Union
 
@@ -26,6 +27,8 @@ parser.add_argument(
     type=str,
     help="Provide a date for extracting game data. Format: 'YYYY-MM-DD'.",
 )
+
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_int(string: str) -> Union[int, None]:
@@ -247,6 +250,7 @@ def main():
     extract_date = command_args.pop("date", None)
     # probably want some sort of error handling to make sure of this...
     year, month, day = extract_date.split("-")
+    logging.info(f"Scraping data for year: {year} month: {month} day: {day}")
     # test day was 2023-03-10
     scoreboard = get_scoreboard(
         sport="basketball-men", division="d3", year=year, month=month, day=day
