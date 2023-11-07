@@ -1,4 +1,4 @@
-drop table if exists box_teams_testtest;
+drop table if exists box_teams_testtest cascade;
 create table box_teams_testtest (
 	id serial PRIMARY KEY
 	, game_id int
