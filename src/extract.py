@@ -10,9 +10,9 @@
 # once some data is in there, start on dbt scripts
 
 import argparse
-from datetime import datetime
 import logging
 import time
+from datetime import datetime
 from typing import Union
 
 import requests
@@ -38,7 +38,9 @@ def parse_int(string: str) -> Union[int, None]:
         return None
 
 
-def write_data(games_data: list, box_teams_data: list, box_players_data: list):
+def write_data(
+    games_data: list, box_teams_data: list, box_players_data: list, teams_info: list
+):
     # should really be more modular...
     # move all this stuff to .env file
     dbname = "d3hoops"
@@ -69,6 +71,17 @@ def write_data(games_data: list, box_teams_data: list, box_players_data: list):
         player_box_result = conn.execute(
             _sql.insert(player_box_table), box_players_data
         )
+
+        # want to do it this way because only want teams that haven't
+        # been entered before. different than games and players
+        teams_statement = _sql.text(
+            """INSERT INTO teams_testtest (team_id, team_name, nickname, team_abbrev)
+            VALUES (:team_id, :team_name, :nickname, :team_abbrev)
+            ON CONFLICT (team_id) DO NOTHING;
+            """
+        )
+        for team in teams_info:
+            conn.execute(teams_statement, team)
         conn.commit()
 
     conn.close()
@@ -116,6 +129,7 @@ def get_box_scores(game_urls: list):
     all_games = list()
     all_team_box = list()
     all_players_box = list()
+    all_teams = list()
 
     for game in games:
         game["game_data"]["created_at"] = datetime.now().isoformat()
@@ -129,10 +143,13 @@ def get_box_scores(game_urls: list):
             player["created_at"] = datetime.now().isoformat()
             all_players_box.append(player)
 
+        all_teams.extend(game["teams_info"])
+
     write_data(
         games_data=all_games,
         box_teams_data=all_team_box,
         box_players_data=all_players_box,
+        teams_info=all_teams,
     )
 
 
@@ -142,6 +159,9 @@ def transform_box_score(game_box: dict, game_id: str) -> dict:
     game_data = dict()
     box_teams = list()
     box_players = list()
+    team_zero_info = get_team_info(game_box["meta"]["teams"][0])
+    team_one_info = get_team_info(game_box["meta"]["teams"][1])
+    teams_info = [team_zero_info, team_one_info]
     team_zero = game_box["teams"][0]["teamId"]
     team_one = game_box["teams"][1]["teamId"]
     game_data["game_id"] = game_id
@@ -176,7 +196,12 @@ def transform_box_score(game_box: dict, game_id: str) -> dict:
 
     box_players += team_one_players
 
-    return {"game_data": game_data, "box_teams": box_teams, "box_players": box_players}
+    return {
+        "game_data": game_data,
+        "box_teams": box_teams,
+        "box_players": box_players,
+        "teams_info": teams_info,
+    }
 
 
 def extract_team_box_score(player_totals: dict) -> dict:
