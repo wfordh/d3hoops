@@ -11,3 +11,5 @@ sources:
         identifier: box_players_testtest
       - name: box_teams
         identifier: box_teams_testtest
+      - name: teams
+        identifier: teams_testtest

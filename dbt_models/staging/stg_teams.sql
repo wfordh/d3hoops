@@ -1,7 +1,7 @@
 with teams as (
 	select
 		*
-	from {{ ref('d3hoops', 'teams') }}
+	from {{ source('d3hoops', 'teams') }}
 )
 select
 	team_id,

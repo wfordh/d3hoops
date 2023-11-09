@@ -10,8 +10,8 @@ select
 	is_team_zero_home,
 	game_date,
 	case 
-		when date_trunc('month', game_date) > 7 then date_trunc('year', game_date) + 1
-		else date_trunc('year', game_date)
+		when date_part('month', game_date) > 7 then date_part('year', game_date) + 1
+		else date_part('year', game_date)
 	end as season,
 	created_at
 from games

@@ -33,6 +33,6 @@ select
 	fouls,
 	blocks,
 	points,
-	fga + tovs + 0.44*fta - o_rebs as n_poss
+	fga + tovs + 0.44*fta - o_rebs as num_possessions,
 	points / (fga + tovs + 0.44*fta - o_rebs) as o_rtg
 from player_box_scores
