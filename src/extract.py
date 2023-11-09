@@ -102,6 +102,10 @@ def get_game_urls(scoreboard: dict) -> list:
     game_urls = list()
     games = scoreboard.get("games")
     for game in games:
+        # skip getting the box score, but maybe some way to still
+        # add it for schedules?
+        if game["game"]["gameState"] != "final":
+            continue
         game_url = game["game"]["url"].rsplit("/", maxsplit=1)[1]
         game_urls.append(game_url)
     return game_urls
@@ -110,6 +114,8 @@ def get_game_urls(scoreboard: dict) -> list:
 def get_game_box_score(game_url: str) -> dict:
     base_url = f"https://data.ncaa.com/casablanca/game/{game_url}/boxscore.json"
     res = requests.get(base_url)
+    if res.status_code != 200:
+        logging.warning(f"Game box score not accessible: {base_url}")
     assert res.status_code == 200
     return res.json()
 
