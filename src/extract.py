@@ -120,7 +120,9 @@ def get_box_scores(game_urls: list):
         # just until async / await?
         time.sleep(1.8)
         game_box = get_game_box_score(url)
-        # do I actually want this?
+        # do I actually want this? might want to have some branching
+        # logic to add the game w/o pulling extra info and can add
+        # status to the db somehow to help with pulling the schedules
         if game_box["meta"]["status"] != "Final":
             continue
         transformed_box = transform_box_score(game_box, url)

@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: d3hoops
+    database: d3hoops
+    schema: public
+    tables:
+      - name: games
+        identifier: games_testtest
+      - name: box_players
+        identifier: box_players_testtest
+      - name: box_teams
+        identifier: box_teams_testtest

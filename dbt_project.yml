@@ -1,0 +1,9 @@
+name: d3hoops
+
+profile: d3hoops
+
+model-paths: ["dbt_models/"]
+
+models:
+  d3hoops:
+    +materialized: view
