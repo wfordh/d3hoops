@@ -103,7 +103,8 @@ def get_game_urls(scoreboard: dict) -> list:
     games = scoreboard.get("games")
     for game in games:
         # skip getting the box score, but maybe some way to still
-        # add it for schedules?
+        # add it for schedules? 
+        # games 6139099 and 6139098 were duplicates - one final and one not. check for that??
         if game["game"]["gameState"] != "final":
             continue
         game_url = game["game"]["url"].rsplit("/", maxsplit=1)[1]

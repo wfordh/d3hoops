@@ -107,15 +107,60 @@ team_season_box_rollup as (
 	group by
 		g.season,
 		tobs.team_id
-),
-
-team_season_rollup_with_names as (
-	select
-		teams.team_name,
-		rollup.*
-	from team_season_box_rollup rollup
-	-- inner? is this the right order for the join?
-	inner join teams on teams.team_id = rollup.team_id
 )
 
-select * from team_season_rollup_with_names
+select
+	teams.team_name,
+	rollup.season,
+	rollup.team_id,
+	rollup.num_games,
+	rollup.season_fgm,
+	rollup.season_fga,
+	rollup.fg_pct,
+	rollup.season_fg2m,
+	rollup.season_fg2a,
+	rollup.fg2_pct,
+	rollup.season_fg3m,
+	rollup.season_fg3a,
+	rollup.fg3_pct,
+	rollup.season_ftm,
+	rollup.season_fta,
+	rollup.ft_pct,
+	rollup.season_rebs,
+	rollup.season_o_rebs,
+	rollup.season_d_rebs,
+	rollup.season_assists,
+	rollup.season_tovs,
+	rollup.season_ast_tov_ratio,
+	rollup.season_fouls,
+	rollup.season_blocks,
+	rollup.season_points,
+	rollup.season_num_possessions,
+	rollup.season_o_rtg,
+	rollup.opponent_season_fgm,
+	rollup.opponent_season_fga,
+	rollup.opponent_fg_pct,
+	rollup.opponent_season_fg2m,
+	rollup.opponent_season_fg2a,
+	rollup.opponent_fg2_pct,
+	rollup.opponent_season_fg3m,
+	rollup.opponent_season_fg3a,
+	rollup.opponent_fg3_pct,
+	rollup.opponent_season_ftm,
+	rollup.opponent_season_fta,
+	rollup.opponent_ft_pct,
+	rollup.opponent_season_rebs,
+	rollup.opponent_season_o_rebs,
+	rollup.opponent_season_d_rebs,
+	rollup.opponent_season_assists,
+	rollup.opponent_season_tovs,
+	rollup.opponent_season_ast_tov_ratio,
+	rollup.opponent_season_fouls,
+	rollup.opponent_season_blocks,
+	rollup.opponent_season_points,
+	rollup.opponent_season_num_possessions,
+	rollup.opponent_season_o_rtg,
+	rollup.season_margin_of_victory
+from team_season_box_rollup rollup
+-- inner? is this the right order for the join?
+inner join teams on teams.team_id = rollup.team_id
