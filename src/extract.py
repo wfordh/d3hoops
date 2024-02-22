@@ -95,46 +95,55 @@ def get_scoreboard(sport: str, division: str, year: str, month: str, day: str) -
     base_url = f"https://data.ncaa.com/casablanca/scoreboard/{sport}/{division}/{year}/{month}/{day}/scoreboard.json"
     res = requests.get(base_url)
     assert res.status_code == 200
+    logging.info("Got scoreboard")
     return res.json()
 
 
-def get_game_urls(scoreboard: dict) -> list:
-    game_urls = list()
+def get_games_data(scoreboard: dict) -> list:
+    game_data = list()
     games = scoreboard.get("games")
     for game in games:
         # skip getting the box score, but maybe some way to still
-        # add it for schedules? 
+        # add it for schedules?
         # games 6139099 and 6139098 were duplicates - one final and one not. check for that??
         if game["game"]["gameState"] != "final":
             continue
-        game_url = game["game"]["url"].rsplit("/", maxsplit=1)[1]
-        game_urls.append(game_url)
-    return game_urls
+        game_info = dict()
+        game_info["game_id"] = game["game"]["url"].rsplit("/", maxsplit=1)[1]
+        game_info["home_team_conf"] = game["game"]["home"]["conferences"][0][
+            "conferenceName"
+        ]
+        game_info["away_team_conf"] = game["game"]["away"]["conferences"][0][
+            "conferenceName"
+        ]
+        game_data.append(game_info)
+    return game_data
 
 
-def get_game_box_score(game_url: str) -> dict:
-    base_url = f"https://data.ncaa.com/casablanca/game/{game_url}/boxscore.json"
+def get_game_box_score(game_id: str) -> dict:
+    base_url = f"https://data.ncaa.com/casablanca/game/{game_id}/boxscore.json"
     res = requests.get(base_url)
     if res.status_code != 200:
-        logging.warning(f"Game box score not accessible: {base_url}")
+        logging.warning(f"Game box score not accessible: {base_id}")
     assert res.status_code == 200
     return res.json()
 
 
-def get_box_scores(game_urls: list):
+def get_box_scores(game_data: list):
     games = list()
-    for url in game_urls:
+    for data in game_data:
         # just until async / await?
         time.sleep(1.8)
-        game_box = get_game_box_score(url)
+        game_box = get_game_box_score(data["game_id"])
         # do I actually want this? might want to have some branching
         # logic to add the game w/o pulling extra info and can add
         # status to the db somehow to help with pulling the schedules
         if game_box["meta"]["status"] != "Final":
             continue
-        transformed_box = transform_box_score(game_box, url)
+        transformed_box = transform_box_score(game_box, data)
         games.append(transformed_box)
 
+    logging.info("Retrieved and transformed all box scores.")
     all_games = list()
     all_team_box = list()
     all_players_box = list()
@@ -154,6 +163,7 @@ def get_box_scores(game_urls: list):
 
         all_teams.extend(game["teams_info"])
 
+    logging.info("Writing data to db!")
     write_data(
         games_data=all_games,
         box_teams_data=all_team_box,
@@ -162,46 +172,56 @@ def get_box_scores(game_urls: list):
     )
 
 
-def transform_box_score(game_box: dict, game_id: str) -> dict:
+def transform_box_score(game_box: dict, game_data: str) -> dict:
     # could pass simpler things into the functions so I don't
     # have to add team and game IDs later
-    game_data = dict()
+    # game_data = dict()
     box_teams = list()
     box_players = list()
     team_zero_info = get_team_info(game_box["meta"]["teams"][0])
     team_one_info = get_team_info(game_box["meta"]["teams"][1])
+    # this logging probably shouldn't happen here
+    logging.info(f"Transforming data for {team_zero_info['team_name']} vs {team_one_info['team_name']}!")
     teams_info = [team_zero_info, team_one_info]
     team_zero = game_box["teams"][0]["teamId"]
     team_one = game_box["teams"][1]["teamId"]
-    game_data["game_id"] = game_id
+    # game_data["game_id"] = game_data["game_url"]
     game_data["team_zero_id"] = team_zero
     game_data["team_one_id"] = team_one
     game_data["is_team_zero_home"] = game_box["meta"]["teams"][0]["homeTeam"] == "true"
+    if game_data["is_team_zero_home"]:
+        # add conferences to games table or teams??
+        # need to just ERD it
+        game_data["team_zero_conference"] = game_data["home_team_conf"]
+        game_data["team_one_conference"] = game_data["away_team_conf"]
+    else:
+        game_data["team_zero_conference"] = game_data["away_team_conf"]
+        game_data["team_one_conference"] = game_data["home_team_conf"]
     game_data["game_date"] = game_box["updatedTimestamp"].replace(
         "ET", "EST"
     )  # why the repalce? should I truncate to just date?
 
     team_zero_stats = extract_team_box_score(game_box["teams"][0]["playerTotals"])
     team_zero_stats["team_id"] = team_zero
-    team_zero_stats["game_id"] = game_id
+    team_zero_stats["game_id"] = game_data["game_id"]
     box_teams.append(team_zero_stats)
 
     team_one_stats = extract_team_box_score(game_box["teams"][1]["playerTotals"])
     team_one_stats["team_id"] = team_one
-    team_one_stats["game_id"] = game_id
+    team_one_stats["game_id"] = game_data["game_id"]
     box_teams.append(team_one_stats)
 
     team_zero_players = extract_player_box_stats(game_box["teams"][0]["playerStats"])
     for player in team_zero_players:
         player["team_id"] = team_zero
-        player["game_id"] = game_id
+        player["game_id"] = game_data["game_id"]
 
     box_players += team_zero_players
 
     team_one_players = extract_player_box_stats(game_box["teams"][1]["playerStats"])
     for player in team_one_players:
         player["team_id"] = team_one
-        player["game_id"] = game_id
+        player["game_id"] = game_data["game_id"]
 
     box_players += team_one_players
 
@@ -290,8 +310,9 @@ def main():
         sport="basketball-men", division="d3", year=year, month=month, day=day
     )
 
-    game_urls = get_game_urls(scoreboard)
-    get_box_scores(game_urls)
+    games_data = get_games_data(scoreboard)
+    logging.info(f"Got data for {len(games_data)} games!")
+    get_box_scores(games_data)
 
 
 if __name__ == "__main__":
