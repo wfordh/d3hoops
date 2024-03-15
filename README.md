@@ -18,3 +18,4 @@ Here's a [short video](https://twitter.com/wfordh/status/1762922181171011697) wi
 - Decouple db write code so it doesn't live inside another function
 - Add player IDs - use surrogate IDs?
 - Moving to the cloud
+- Clean up the repo by moving JS related stuff to a `deprecated` folder
